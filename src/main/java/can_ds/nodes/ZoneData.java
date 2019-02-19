@@ -22,6 +22,17 @@ public class ZoneData implements Serializable {
     private Map<String, List<NodeInterface>> neighbors;
 
     /**
+     * List of data items of new zone.
+     */
+    private Map<String, List<String>> dataItems;
+
+    /**
+     * Remote stub of zone splitter.
+     */
+    private NodeInterface destStub;
+
+
+    /**
      * Default constructor.
      */
     public ZoneData() {}
@@ -39,6 +50,8 @@ public class ZoneData implements Serializable {
         this.neighbors.put("bottom", new ArrayList<>());
         this.neighbors.put("right", new ArrayList<>());
         this.neighbors.put("top", new ArrayList<>());
+        this.dataItems = new HashMap<>();
+        this.destStub = null;
     }
 
     /**
@@ -75,5 +88,41 @@ public class ZoneData implements Serializable {
      */
     public void setNeighbors(Map<String, List<NodeInterface>> neighbors) {
         this.neighbors = neighbors;
+    }
+
+    /**
+     * Returns data items managed.
+     *
+     * @return Map<String, List<String>>
+     */
+    public Map<String, List<String>> getDataItems() {
+        return dataItems;
+    }
+
+    /**
+     * Sets data items managed.
+     *
+     * @param dataItems
+     */
+    public void setDataItems(Map<String, List<String>> dataItems) {
+        this.dataItems = dataItems;
+    }
+
+    /**
+     * Returns remote stub of destination node.
+     *
+     * @return NodeInterface
+     */
+    public NodeInterface getDestStub() {
+        return destStub;
+    }
+
+    /**
+     * Sets remote stub of destination node.
+     *
+     * @param destStub
+     */
+    public void setDestStub(NodeInterface destStub) {
+        this.destStub = destStub;
     }
 }

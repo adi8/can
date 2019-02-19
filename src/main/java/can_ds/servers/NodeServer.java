@@ -9,6 +9,7 @@ import can_ds.utils.Utils;
 import can_ds.utils.Zone;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStreamReader;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -42,8 +43,8 @@ public class NodeServer {
 
                 String[] cmd = br.readLine().trim().split(" ");
 
-                Registry registry = null;
-                DNSNodeInterface dnsNodeStub = null;
+                Registry registry;
+                DNSNodeInterface dnsNodeStub;
 
                 try {
                     registry = LocateRegistry.getRegistry();
@@ -131,19 +132,25 @@ public class NodeServer {
                     case "insert":
                         if (node.getZone() != null) {
                             if (cmd.length == 3) {
-                                // Calculate x coordinate for keyword
-                                double x = Utils.calcXFromKeyword(cmd[1]);
+                                File file = new File(cmd[2]);
+                                if (file.exists()) {
+                                    // Calculate x coordinate for keyword
+                                    double x = Utils.calcXFromKeyword(cmd[1]);
 
-                                // Calculate y coordinate for keyword
-                                double y = Utils.calcYFromKeyword(cmd[1]);
+                                    // Calculate y coordinate for keyword
+                                    double y = Utils.calcYFromKeyword(cmd[1]);
 
-                                RoutingData insertData = new RoutingData(x, y, nodeStub, "insert");
-                                insertData.setFileName(cmd[2]);
+                                    RoutingData insertData = new RoutingData(x, y, nodeStub, "insert");
+                                    insertData.setFileName(cmd[2]);
 
-                                // Starting from self
-                                nodeStub.sendMessage(insertData);
+                                    // Starting from self
+                                    nodeStub.sendMessage(insertData);
+                                }
+                                else {
+                                    System.out.printf("ERROR: File %s does not exist", cmd[2]);
+                                }
                             } else {
-                                System.out.println("Usage: insert <keyword> <filename>");
+                                System.out.println("Usage: insert <keyword> <abs_filename>");
                             }
                         }
                         else {

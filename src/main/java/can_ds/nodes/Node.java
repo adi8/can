@@ -6,6 +6,7 @@ import can_ds.utils.Utils;
 import can_ds.utils.Zone;
 
 import java.io.*;
+import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -212,7 +213,8 @@ public class Node implements NodeInterface {
                     // Split zone neighbors
                     this.splitZoneNeighbors(newZone, r.getOrigNode(), splitType);
 
-                    // TODO: Split zone dataitems
+                    // Split zone dataitems
+                    List<String> filesToRemove = this.splitZoneDataItems(newZone);
 
                     try {
                         r.getOrigNode().assignZone(newZone);
@@ -220,6 +222,13 @@ public class Node implements NodeInterface {
                     catch (RemoteException e) {
                         System.out.println("ERROR: " + e.getMessage());
                         e.printStackTrace();
+                    }
+
+                    // Delete files passed to new zone.
+                    for (String fileName : filesToRemove) {
+                        File file = new File(DATA_ITEMS_ROOT + fileName);
+                        if (file.exists())
+                            file.delete();
                     }
                 }
                 // Forward routing data to neighbor nearest to dest point
@@ -547,6 +556,37 @@ public class Node implements NodeInterface {
     }
 
     /**
+     * Splits zone data items and assigns to new node.
+     *
+     * @param zone - ZoneData for new node
+     * @return List<> - List of filenames to remove from current node
+     */
+    public List<String> splitZoneDataItems(ZoneData zone) {
+        Map<String, List<String>> newZoneDataItems = new HashMap<>();
+        List<String> filesToRemove = new ArrayList<>();
+        for (String key : this.dataItems.keySet()) {
+            String[] keyParts = key.split(",");
+            double x = Double.parseDouble(keyParts[0]);
+            double y = Double.parseDouble(keyParts[1]);
+            if (!this.z.isPointInZone(x, y)) {
+                List<String> tmpFileNames = this.dataItems.get(key);
+                // Add key, filename pair for new zone.
+                newZoneDataItems.put(key, tmpFileNames);
+
+                // Keep track of file names to physically remove from node.
+                filesToRemove.addAll(tmpFileNames);
+
+                // Remove key, filename pair as new zone will manage them.
+                this.dataItems.remove(key);
+            }
+        }
+
+        zone.setDataItems(newZoneDataItems);
+
+        return filesToRemove;
+    }
+
+    /**
      * Returns if given zone is a neighbor along given position.
      *
      * @param zone - Zone information
@@ -595,6 +635,19 @@ public class Node implements NodeInterface {
     public void assignZone(ZoneData zone) {
         this.setZone(zone.getZone());
         this.neighbors = zone.getNeighbors();
+        this.dataItems = zone.getDataItems();
+        NodeInterface nodeStub = zone.getDestStub();
+
+        for (List<String> fileNames : this.dataItems.values()) {
+            for (String fileName : fileNames) {
+                try {
+                    nodeStub.downloadFile(DATA_ITEMS_ROOT + "/" + fileName);
+                }
+                catch (RemoteException e) {
+                    System.out.println("Failed to download file " + fileName);
+                }
+            }
+        }
     }
 
     /**
