@@ -1,0 +1,3 @@
+#!/bin/bash
+
+rmiregistry -J-Djava.class.path=build/classes/java/main/
