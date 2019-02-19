@@ -2,11 +2,11 @@ package can_ds.nodes;
 
 import can_ds.interfaces.NodeInterface;
 import can_ds.utils.RoutingData;
+import can_ds.utils.UpdateData;
 import can_ds.utils.Utils;
 import can_ds.utils.Zone;
 
 import java.io.*;
-import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.HashMap;

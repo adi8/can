@@ -47,7 +47,7 @@ public class NodeServer {
                 DNSNodeInterface dnsNodeStub;
 
                 try {
-                    registry = LocateRegistry.getRegistry();
+                    registry = LocateRegistry.getRegistry("localhost", 4001);
 
                     // Get remote interface of dns node
                     dnsNodeStub = (DNSNodeInterface) registry.lookup(DNSNode.DNS_URL);

@@ -17,15 +17,9 @@ public class DNSServer {
         try {
             DNSNodeInterface dnsNodeStub =
                     (DNSNodeInterface) UnicastRemoteObject.exportObject(dnsNode, 0);
-            Registry registry = null;
-            try {
-                registry = LocateRegistry.getRegistry();
-                registry.bind(DNSNode.DNS_URL, dnsNodeStub);
-            }
-            catch (Exception e) {
-                System.out.println("RMI registry server is not up. Try again!");
-                System.exit(1);
-            }
+
+            Registry registry = LocateRegistry.createRegistry(4001);
+            registry.bind(DNSNode.DNS_URL, dnsNodeStub);
 
             String ipAddress = Utils.getAddress();
             String name = "dns";

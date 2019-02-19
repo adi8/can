@@ -1,8 +1,8 @@
 package can_ds.interfaces;
 
-import can_ds.nodes.UpdateData;
 import can_ds.nodes.ZoneData;
 import can_ds.utils.RoutingData;
+import can_ds.utils.UpdateData;
 import can_ds.utils.Zone;
 
 import java.rmi.Remote;
