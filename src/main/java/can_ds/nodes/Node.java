@@ -263,7 +263,6 @@ public class Node implements NodeInterface {
 
                     if (fileData != null) {
                         File file = new File(DATA_ITEMS_ROOT + "/" + fileName);
-                        System.out.println(file.getName());
                         try {
                             BufferedOutputStream out =
                                     new BufferedOutputStream(
@@ -634,7 +633,17 @@ public class Node implements NodeInterface {
      */
     public void dispPath(String path) {
         System.out.println("Path to destination: ");
-        System.out.println(path);
+        String[] peers = path.split(" ");
+        String dest = "";
+        for (int i = 0; i < peers.length; i++) {
+            System.out.print(peers[i]);
+            if (i != peers.length - 1)
+                System.out.print(" => ");
+            else
+                dest = peers[i];
+        }
+        System.out.println();
+        System.out.println("Peer " + dest + " stores the file");
     }
 
     /**
@@ -676,7 +685,7 @@ public class Node implements NodeInterface {
     public String dataItemsToString() {
         StringBuilder str;
         if (this.dataItems.isEmpty()) {
-            str = new StringBuilder("[]");
+            str = new StringBuilder("[ ]");
         }
         else {
             str = new StringBuilder("[ \n");
