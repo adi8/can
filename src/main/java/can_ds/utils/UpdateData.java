@@ -1,7 +1,6 @@
-package can_ds.nodes;
+package can_ds.utils;
 
 import can_ds.interfaces.NodeInterface;
-import can_ds.utils.Zone;
 
 import java.io.Serializable;
 
