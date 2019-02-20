@@ -64,8 +64,8 @@ public class Zone implements Serializable {
         this.y = y;
         this.width = width;
         this.height = height;
-        this.midX = calcMidpoint(this.x, this.width);
-        this.midY = calcMidpoint(this.y, this.height);
+        this.midX = this.x + (this.width / 2.0);
+        this.midY = this.y + (this.height / 2.0);
     }
 
     /**
@@ -141,17 +141,6 @@ public class Zone implements Serializable {
     }
 
     /**
-     * Calculates the mid-point coordinate along an axis.
-     *
-     * @param p - Starting coordinate
-     * @param len - Length along given coordinates axis
-     * @return double - Midpoint coordinate
-     */
-    private double calcMidpoint(double p, double len) {
-        return (p + len) / 2.0;
-    }
-
-    /**
      *
      * @param px - x coordinate of point
      * @param py - y coordinate of point
@@ -175,33 +164,33 @@ public class Zone implements Serializable {
      */
     public int splitZone(ZoneData zone) {
         int retval = 0;
-        double x = 0, y = 0, width = 0, height = 0;
+        double newX = 0, newY = 0, newWidth = 0, newHeight = 0;
 
         // Split zone coordinates vertically
         if (this.width == this.height) {
             // Set zone values for new node
-            width = this.width / 2.0;
-            height = this.height;
-            x = this.midX;
-            y = this.y;
+            newWidth = this.width / 2.0;
+            newHeight = this.height;
+            newX = this.x + (newWidth) ;
+            newY = this.y;
 
             // Update current node's zone width
-            this.setWidth(this.width / 2.0);
+            this.setWidth(newWidth);
             retval = 1;
         }
         // Split zone coordinates horizontally
         else {
             // Set zone values for new node
-            width = this.width;
-            height = this.height / 2.0;
-            x = this.x;
-            y = this.midY;
+            newWidth = this.width;
+            newHeight = this.height / 2.0;
+            newX = this.x;
+            newY = this.y + (newHeight);
 
             // Update current zone height
-            this.setHeight(this.height / 2.0);
+            this.setHeight(newHeight);
         }
 
-        zone.setZone(new Zone(x, y, width, height));
+        zone.setZone(new Zone(newX, newY, newWidth, newHeight));
 
         return retval;
     }

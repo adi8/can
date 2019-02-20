@@ -12,6 +12,11 @@ import java.util.List;
 
 public class Utils {
 
+    /**
+     * Returns the IP address of current node.
+     *
+     * @return String
+     */
     public static String getAddress() {
         String ipAddress = "";
         try {
@@ -33,7 +38,7 @@ public class Utils {
                     if (!(inetAddr instanceof Inet4Address))
                         continue;
 
-                    ipAddress = inetAddr.getHostAddress();
+                    ipAddress += inetAddr.getHostAddress() + " ";
                 }
 
             }
@@ -46,6 +51,14 @@ public class Utils {
         return ipAddress;
     }
 
+    /**
+     * Returns the neighbor closest to given point.
+     *
+     * @param px - x coordinate of destination
+     * @param py - y coordinate of destination
+     * @param nodeStubs - Remote stubs of neighbor nodes
+     * @return NodeInterface
+     */
     public static NodeInterface getNearestNeighbor(double px,
                                                    double py,
                                                    List<NodeInterface> nodeStubs)
@@ -69,6 +82,12 @@ public class Utils {
         return retNodeStub;
     }
 
+    /**
+     * Calculates y coordinate from given keyword.
+     *
+     * @param keyword - Keyword for file
+     * @return double
+     */
     public static double calcXFromKeyword(String keyword) {
         int i = 1;
         double x = 0.0;
@@ -79,6 +98,12 @@ public class Utils {
         return x % 10;
     }
 
+    /**
+     * Calculates y coordinate from given keyword.
+     *
+     * @param keyword - Keyword for file
+     * @return double
+     */
     public static double calcYFromKeyword(String keyword) {
         int i = 0;
         double y = 0.0;

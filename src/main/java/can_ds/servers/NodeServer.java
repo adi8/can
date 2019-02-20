@@ -21,6 +21,27 @@ public class NodeServer {
     private static final String PEER_PREFIX = "peer-";
 
     public static void main(String[] args) {
+        if (args.length != 1) {
+            System.out.println("Usage: ./node <dns-ip-address>");
+            System.exit(1);
+        }
+
+        String dnsAddrs = args[0];
+
+        Registry registry = null;
+        DNSNodeInterface dnsNodeStub = null;
+
+        try {
+            registry = LocateRegistry.getRegistry(dnsAddrs, 4001);
+
+            // Get remote interface of dns node
+            dnsNodeStub = (DNSNodeInterface) registry.lookup(DNSNode.DNS_URL);
+        }
+        catch (Exception e) {
+            System.out.println("DNS Service not running. Please check DNS's IP address");
+            System.exit(1);
+        }
+
         try {
             Node node = new Node();
 
@@ -42,20 +63,6 @@ public class NodeServer {
                 System.out.print(peerName + " > ");
 
                 String[] cmd = br.readLine().trim().split(" ");
-
-                Registry registry;
-                DNSNodeInterface dnsNodeStub;
-
-                try {
-                    registry = LocateRegistry.getRegistry("localhost", 4001);
-
-                    // Get remote interface of dns node
-                    dnsNodeStub = (DNSNodeInterface) registry.lookup(DNSNode.DNS_URL);
-                }
-                catch (Exception e) {
-                    System.out.println("DNS Service not running. Please try again later");
-                    continue;
-                }
 
                 String cmd_wo_args = cmd[0];
 
@@ -88,9 +95,12 @@ public class NodeServer {
                             }
                             catch (RemoteException e) {
                                 System.out.println("ERROR: DNS server seems to be down. Try again later!");
+                                e.printStackTrace();
                                 break;
                             }
 
+                            // Create directory to store files transmitted
+                            new File(Node.DATA_ITEMS_ROOT + "-" + peerID).mkdirs();
 
                             // Set IP address, peerName and peerID of node
                             String peerAddress = Utils.getAddress();
@@ -155,6 +165,27 @@ public class NodeServer {
                         }
                         else {
                             System.out.println("Node is not a part of the overlay network yet");
+                        }
+                        break;
+
+                    case "search":
+                        if (node.getZone() != null) {
+                            if (cmd.length == 3) {
+                                // Calculate x coordinate for keyword
+                                double x = Utils.calcXFromKeyword(cmd[1]);
+
+                                // Calculate y coordinate for keyword
+                                double y = Utils.calcYFromKeyword(cmd[1]);
+
+                                RoutingData searchData = new RoutingData(x, y, nodeStub, "search");
+                                searchData.setFileName(cmd[2]);
+
+                                // Starting from self
+                                nodeStub.sendMessage(searchData);
+                            }
+                            else {
+                                System.out.println("Usage: search <keyword> <abs_filename>");
+                            }
                         }
                         break;
 

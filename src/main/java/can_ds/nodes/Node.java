@@ -15,7 +15,7 @@ import java.util.Map;
 
 public class Node implements NodeInterface {
     /**
-     *
+     * Directory path to store files.
      */
     public static final String DATA_ITEMS_ROOT = "data";
 
@@ -66,8 +66,6 @@ public class Node implements NodeInterface {
         this.dataItems = new HashMap<>();
         this.z = null;
 
-        // Create directory to store files transmitted
-        new File(DATA_ITEMS_ROOT).mkdirs();
     }
 
     /**
@@ -190,6 +188,7 @@ public class Node implements NodeInterface {
      */
     public int sendMessage(RoutingData r) {
         int retval = 1;
+        String path = "";
 
         // Extract the operation to be performed
         String op = r.getOp();
@@ -198,6 +197,8 @@ public class Node implements NodeInterface {
         double px = r.getX();
         double py = r.getY();
 
+        // Get caller node
+        NodeInterface origNode = r.getOrigNode();
         boolean isPointInZone = this.z.isPointInZone(px, py);
 
         switch(op) {
@@ -248,9 +249,11 @@ public class Node implements NodeInterface {
 
             case "insert":
                 // Update path taken
-                String path = r.getPath();
+                path = r.getPath();
                 path += "peer-" + this.getID() + " ";
                 r.setPath(path);
+
+                boolean success_flag = true;
 
                 // Check if point is in our zone
                 if (isPointInZone) {
@@ -260,14 +263,16 @@ public class Node implements NodeInterface {
                     List<String> tmpValue = this.dataItems.getOrDefault(point, (new ArrayList<>()));
                     tmpValue.add(r.getFileName());
 
-                    NodeInterface origNode = r.getOrigNode();
                     byte[] fileData = null;
                     try {
                         fileData = origNode.downloadFile(fileName);
                     }
                     catch (RemoteException e) {
-                        System.out.println("ERROR: " + e.getMessage());
-                        e.printStackTrace();
+                        try { origNode.dispError("ERROR: " + e.getMessage()); }
+                        catch (RemoteException e1) {
+                            System.out.println("ERROR: " + e1.getMessage());
+                        }
+                        break;
                     }
 
                     if (fileData != null) {
@@ -280,7 +285,11 @@ public class Node implements NodeInterface {
                             out.flush();
                             out.close();
                         } catch (Exception e) {
-                            System.out.println("ERROR: " + e.getMessage());
+                            try { origNode.dispError("ERROR: " + e.getMessage()); }
+                            catch (RemoteException e1) {
+                                System.out.println("ERROR: " + e1.getMessage());
+                            }
+                            break;
                         }
 
                         // Store filename in hash map
@@ -290,7 +299,11 @@ public class Node implements NodeInterface {
                         try {
                             origNode.dispPath(path);
                         } catch (RemoteException e) {
-                            System.out.println("ERROR: " + e.getMessage());
+                            try { origNode.dispError("ERROR: " + e.getMessage()); }
+                            catch (RemoteException e1) {
+                                System.out.println("ERROR: " + e1.getMessage());
+                            }
+                            break;
                         }
                     }
                     else {
@@ -306,11 +319,64 @@ public class Node implements NodeInterface {
                         nearestNeighbor.sendMessage(r);
                     }
                     catch(Exception e) {
-                        System.out.println("ERROR: " + e.getMessage());
-                        e.printStackTrace();
+                        try { origNode.dispError("ERROR: " + e.getMessage()); }
+                        catch (RemoteException e1) {
+                            System.out.println("ERROR: " + e1.getMessage());
+                        }
+                        break;
                     }
                 }
                 break;
+
+            case "search":
+                // Update path taken
+                path = r.getPath();
+                path += "peer-" + this.getID() + " ";
+                r.setPath(path);
+
+                // Check if point is in our zone
+                if (isPointInZone) {
+                    // Check if file is part of data items
+                    String point = px + "," + py;
+                    List<String> tmpValue = this.dataItems.getOrDefault(point, (new ArrayList<>()));
+
+                    if (tmpValue.contains(r.getFileName())) {
+                        try {
+                            origNode.dispPath(path);
+                        }
+                        catch (RemoteException e) {
+                            try { origNode.dispError("ERROR: " + e.getMessage()); }
+                            catch (RemoteException e1) {
+                                System.out.println("ERROR: " + e1.getMessage());
+                            }
+                            break;
+                        }
+                    }
+                    else {
+                        try {
+                            origNode.dispError("File not found!");
+                        }
+                        catch (RemoteException e) {
+                            System.out.println("ERROR: " + e.getMessage());
+                        }
+                    }
+                }
+                // Forward routing data to neighbor nearest to dest point
+                else {
+                    NodeInterface nearestNeighbor =
+                            Utils.getNearestNeighbor(px, py, this.getAllNeighborsList());
+
+                    try {
+                        nearestNeighbor.sendMessage(r);
+                    }
+                    catch(Exception e) {
+                        try { origNode.dispError("ERROR: " + e.getMessage()); }
+                        catch (RemoteException e1) {
+                            System.out.println("ERROR: " + e1.getMessage());
+                        }
+                        break;
+                    }
+                }
         }
 
         return retval;

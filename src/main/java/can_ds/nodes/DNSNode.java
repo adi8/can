@@ -66,10 +66,16 @@ public class DNSNode implements DNSNodeInterface {
         Collections.shuffle(nodeStubs);
 
         if (this.nodeCount > 3) {
-            nodeStubs = nodeStubs.subList(0, MAX_BS_NODES);
+            List<NodeInterface> retNodes = new ArrayList<>();
+            for (int i = 0; i < MAX_BS_NODES; i++) {
+                retNodes.add(nodeStubs.get(i));
+            }
+            return retNodes;
+        }
+        else {
+            return nodeStubs;
         }
 
-        return nodeStubs;
     }
 
     /**

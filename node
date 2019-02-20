@@ -1,3 +1,3 @@
 #!/bin/bash
 
-java -cp build/classes/java/main -Djava.rmi.server.codebase=file:build/classes/java/main/ can_ds.servers.NodeServer
+java -cp build/classes/java/main -Djava.rmi.server.codebase=file:build/classes/java/main/ can_ds.servers.NodeServer $1
