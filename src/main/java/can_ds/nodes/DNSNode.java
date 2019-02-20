@@ -102,6 +102,7 @@ public class DNSNode implements DNSNodeInterface {
      */
     public void deregister(int id) {
         this.nodeMap.remove(id);
+        this.nodeCount--;
     }
 
     /**

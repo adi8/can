@@ -60,7 +60,7 @@ public class NodeServer {
 
             boolean exit_flag = false;
             while(!exit_flag) {
-                System.out.print(peerName + " > ");
+                System.out.print("\n" + peerName + " > ");
 
                 String[] cmd = br.readLine().trim().split(" ");
 
@@ -192,6 +192,7 @@ public class NodeServer {
                     case "exit":
                         if (peerID > -1) {
                             try {
+                                System.out.println("deregistered" + peerName);
                                 dnsNodeStub.deregister(peerID);
                             }
                             catch (RemoteException e) {

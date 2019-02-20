@@ -217,6 +217,9 @@ public class Node implements NodeInterface {
                     // Split zone dataitems
                     List<String> filesToRemove = this.splitZoneDataItems(newZone);
 
+                    // Set dest zone for file transfers
+                    newZone.setDestStub(this.selfStub);
+
                     try {
                         r.getOrigNode().assignZone(newZone);
                     }
@@ -276,7 +279,8 @@ public class Node implements NodeInterface {
                     }
 
                     if (fileData != null) {
-                        File file = new File(DATA_ITEMS_ROOT + "/" + fileName);
+                        File file = new File(DATA_ITEMS_ROOT + "-" +
+                                this.getID() + "/" + fileName);
                         try {
                             BufferedOutputStream out =
                                     new BufferedOutputStream(
@@ -630,6 +634,8 @@ public class Node implements NodeInterface {
     public List<String> splitZoneDataItems(ZoneData zone) {
         Map<String, List<String>> newZoneDataItems = new HashMap<>();
         List<String> filesToRemove = new ArrayList<>();
+        List<String> keysToRemove = new ArrayList<>();
+
         for (String key : this.dataItems.keySet()) {
             String[] keyParts = key.split(",");
             double x = Double.parseDouble(keyParts[0]);
@@ -642,9 +648,13 @@ public class Node implements NodeInterface {
                 // Keep track of file names to physically remove from node.
                 filesToRemove.addAll(tmpFileNames);
 
-                // Remove key, filename pair as new zone will manage them.
-                this.dataItems.remove(key);
+                // Track key, filename pair to remove as new zone will manage them.
+                keysToRemove.add(key);
             }
+        }
+
+        for (String key : keysToRemove) {
+            this.dataItems.remove(key);
         }
 
         zone.setDataItems(newZoneDataItems);
@@ -707,7 +717,8 @@ public class Node implements NodeInterface {
         for (List<String> fileNames : this.dataItems.values()) {
             for (String fileName : fileNames) {
                 try {
-                    nodeStub.downloadFile(DATA_ITEMS_ROOT + "/" + fileName);
+                    nodeStub.downloadFile(DATA_ITEMS_ROOT + "-" +
+                            nodeStub.getID() + "/" + fileName);
                 }
                 catch (RemoteException e) {
                     System.out.println("Failed to download file " + fileName);
