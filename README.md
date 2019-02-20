@@ -28,7 +28,8 @@ To run a peer node run the following
 ```
 bash node <dns-ip-address>
 ```
-Here IP address of DNS server has to be passed as it serves the peer with a list of bootstrap nodes to allow the node to join the overlay network.
+Here IP address of DNS server has to be passed as it serves the peer with a list of bootstrap 
+nodes to allow the node to join the overlay network.
 
 Once within the node terminal. The following commands are accepted
   * JOIN 
@@ -36,24 +37,41 @@ Once within the node terminal. The following commands are accepted
     ```
     peer-0 > join
     ```
+
+    Registers with DNS node, which then returns a set of bootstrap nodes that are part of the 
+    network. These bootstrap nodes are then used to join the CAN network.
     
   * INSERT
   
     ```
     peer-0 > insert <keyword> <filename>
     ```
+
+    OR
+
+    ```
+    peer-0 > insert <keyword> <filename> <peer_id>
+    ```
     
     `<keyword>` is a keyword which is hashed to find a peer that would store the file.
     `<filename>` is the file that will be stored at a peer.
+    `<peer_id>` is the ID of a peer from where insert should happen.
     
   * SEARCH 
   
     ```
     peer-0 > search <keyword> <filename>
     ```
+
+    OR
+
+    ```
+    peer-0 > search <keyword> <filename> <peer_id>
+    ```
     
     `<keyword>` is a keyword which is hashed to find a peer that would have stored the file.
     `<filename>` is the file that will be searched for at peers.
+    `<peer_id>` is the ID of a peer from where search should happen.
     
   * VIEW 
   
@@ -67,4 +85,5 @@ Once within the node terminal. The following commands are accepted
 
   * LEAVE
   
-    Currently node does not completely support leave command.
+    Currently node does not correctly support leave command. Using `exit` leaves the entire network in an
+    inconsistent state.
