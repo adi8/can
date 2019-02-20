@@ -224,8 +224,11 @@ public class Node implements NodeInterface {
                         r.getOrigNode().assignZone(newZone);
                     }
                     catch (RemoteException e) {
-                        System.out.println("ERROR: " + e.getMessage());
-                        e.printStackTrace();
+                        try { origNode.dispError("Failed to assign new zone"); }
+                        catch (RemoteException e1) {
+                            System.out.println("ERROR: " + e.getMessage());
+                        }
+                        break;
                     }
 
                     // Delete files passed to new zone.
@@ -244,8 +247,10 @@ public class Node implements NodeInterface {
                         nearestNeighbor.sendMessage(r);
                     }
                     catch (RemoteException e) {
-                        System.out.println("ERROR: " + e.getMessage());
-                        e.printStackTrace();
+                        try { origNode.dispError("Failed to forward message"); }
+                        catch (RemoteException e1) {
+                            System.out.println("ERROR: " + e1.getMessage());
+                        }
                     }
                 }
                 break;
@@ -256,15 +261,15 @@ public class Node implements NodeInterface {
                 path += "peer-" + this.getID() + " ";
                 r.setPath(path);
 
-                boolean success_flag = true;
-
                 // Check if point is in our zone
                 if (isPointInZone) {
                     // Add filename to this nodes data items
                     String fileName = r.getFileName();
+                    File tmpFile = new File(fileName);
+                    String onlyFileName = tmpFile.getName();
                     String point = px + "," + py;
                     List<String> tmpValue = this.dataItems.getOrDefault(point, (new ArrayList<>()));
-                    tmpValue.add(r.getFileName());
+                    tmpValue.add(onlyFileName);
 
                     byte[] fileData = null;
                     try {
@@ -280,7 +285,7 @@ public class Node implements NodeInterface {
 
                     if (fileData != null) {
                         File file = new File(DATA_ITEMS_ROOT + "-" +
-                                this.getID() + "/" + fileName);
+                                this.getID() + "/" + onlyFileName);
                         try {
                             BufferedOutputStream out =
                                     new BufferedOutputStream(
@@ -344,7 +349,9 @@ public class Node implements NodeInterface {
                     String point = px + "," + py;
                     List<String> tmpValue = this.dataItems.getOrDefault(point, (new ArrayList<>()));
 
-                    if (tmpValue.contains(r.getFileName())) {
+                    String searchValue = r.getFileName();
+
+                    if (tmpValue.contains(searchValue)) {
                         try {
                             origNode.dispPath(path);
                         }
@@ -716,13 +723,34 @@ public class Node implements NodeInterface {
 
         for (List<String> fileNames : this.dataItems.values()) {
             for (String fileName : fileNames) {
+                byte[] fileData = null;
                 try {
-                    nodeStub.downloadFile(DATA_ITEMS_ROOT + "-" +
+                    fileData = nodeStub.downloadFile(DATA_ITEMS_ROOT + "-" +
                             nodeStub.getID() + "/" + fileName);
                 }
                 catch (RemoteException e) {
                     System.out.println("Failed to download file " + fileName);
                 }
+
+                if (fileData != null) {
+                    File file = new File(DATA_ITEMS_ROOT + "-" +
+                            this.getID() + "/" + fileName);
+                    try {
+                        BufferedOutputStream out =
+                                new BufferedOutputStream(
+                                        new FileOutputStream(file));
+                        out.write(fileData, 0, fileData.length);
+                        out.flush();
+                        out.close();
+                    } catch (Exception e) {
+                        System.out.println("Failed to write file " + fileName);
+                        break;
+                    }
+                }
+                else {
+                    System.out.println("Failed to download file" + fileName);
+                }
+
             }
         }
     }
@@ -843,13 +871,13 @@ public class Node implements NodeInterface {
     public String toString() {
         String zoneInfo = (z == null) ? "N/A" : this.z.toString();
 
-        return "+++++++++++++++++++++++\n" +
+        return "+++++++++++++++++++++++++++++++++++++++++++++++++++++\n" +
                "Name      : " + this.name + "\n" +
                "IPAddr    : " + this.ipAddress + "\n" +
                "Zone      : " + zoneInfo + "\n" +
                "Neighbors : " + this.neighborsToString() + "\n" +
                "Data Items: " + this.dataItemsToString() + "\n" +
-               "+++++++++++++++++++++++\n";
+               "+++++++++++++++++++++++++++++++++++++++++++++++++++++\n";
     }
 
 }

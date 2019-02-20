@@ -9,5 +9,6 @@ public interface DNSNodeInterface extends Remote {
     void deregister(int id) throws RemoteException;
     String dispNodeInfo() throws RemoteException;
     List<NodeInterface> getBSNodes() throws RemoteException;
+    NodeInterface getNodeStub(int peerID) throws RemoteException;
     String dispNodeInfo(int id) throws RemoteException;
 }

@@ -25,10 +25,10 @@ public class DNSServer {
             String name = "dns";
 
             String startMsg = "DNS Node Ready\n" +
-                              "+++++++++++++++++++++++\n" +
+                              "+++++++++++++++++++++++++++++++++++++++++++++++++++++\n" +
                               "IP Address: " + ipAddress + "\n" +
                               "Name      : " + name + "\n" +
-                              "+++++++++++++++++++++++\n";
+                              "+++++++++++++++++++++++++++++++++++++++++++++++++++++\n";
             System.out.println(startMsg);
 
             InputStreamReader isr = new InputStreamReader(System.in);

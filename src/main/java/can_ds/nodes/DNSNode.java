@@ -79,6 +79,16 @@ public class DNSNode implements DNSNodeInterface {
     }
 
     /**
+     * Returns remote stub of a requested peer ID.
+     *
+     * @param peerID - Requested peer's ID
+     * @return NodeInterface
+     */
+    public NodeInterface getNodeStub(int peerID) {
+        return this.nodeMap.getOrDefault(peerID, null);
+    }
+
+    /**
      * Registers a node with remote interface nodeStub and
      * returns a unique id for the node.
      *

@@ -141,26 +141,52 @@ public class NodeServer {
 
                     case "insert":
                         if (node.getZone() != null) {
-                            if (cmd.length == 3) {
+                            if (cmd.length >= 3) {
+                                // Calculate x coordinate for keyword
+                                double x = Utils.calcXFromKeyword(cmd[1]);
+
+                                // Calculate y coordinate for keyword
+                                double y = Utils.calcYFromKeyword(cmd[1]);
+
                                 File file = new File(cmd[2]);
                                 if (file.exists()) {
-                                    // Calculate x coordinate for keyword
-                                    double x = Utils.calcXFromKeyword(cmd[1]);
-
-                                    // Calculate y coordinate for keyword
-                                    double y = Utils.calcYFromKeyword(cmd[1]);
-
+                                    // Create routing message
                                     RoutingData insertData = new RoutingData(x, y, nodeStub, "insert");
                                     insertData.setFileName(cmd[2]);
 
-                                    // Starting from self
-                                    nodeStub.sendMessage(insertData);
+                                    if (cmd.length == 4) {
+                                        int startPeerID;
+
+                                        try { startPeerID = Integer.parseInt(cmd[3]); }
+                                        catch (Exception e) {
+                                            System.out.println("Peer ID must be an integer");
+                                            break;
+                                        }
+
+                                        // Get remote stub for mentioned peer from DNS
+                                        NodeInterface startNodeStub =
+                                                dnsNodeStub.getNodeStub(startPeerID);
+
+                                        if (startNodeStub != null) {
+                                            // Starting insert from mentioned peer id
+                                            startNodeStub.sendMessage(insertData);
+                                        }
+                                        else {
+                                            System.out.println("Peer " + cmd[3] + " does not exist");
+                                        }
+                                    }
+                                    else {
+                                        // Starting from self
+                                        nodeStub.sendMessage(insertData);
+                                    }
                                 }
                                 else {
-                                    System.out.printf("ERROR: File %s does not exist", cmd[2]);
+                                    System.out.println("ERROR: File " + cmd[2] + " does not exist" );
                                 }
-                            } else {
-                                System.out.println("Usage: insert <keyword> <abs_filename>");
+                            }
+                            else {
+                                System.out.println("Usage: insert <keyword> <abs_filename>\n" +
+                                                   "       insert <keyword> <abs_filename> <peer_id>");
                             }
                         }
                         else {
@@ -170,22 +196,52 @@ public class NodeServer {
 
                     case "search":
                         if (node.getZone() != null) {
-                            if (cmd.length == 3) {
+                            if (cmd.length >= 3) {
                                 // Calculate x coordinate for keyword
                                 double x = Utils.calcXFromKeyword(cmd[1]);
 
                                 // Calculate y coordinate for keyword
                                 double y = Utils.calcYFromKeyword(cmd[1]);
 
-                                RoutingData searchData = new RoutingData(x, y, nodeStub, "search");
-                                searchData.setFileName(cmd[2]);
+                                // Get only file name if absolute path provided
+                                File tmpFile = new File(cmd[2]);
+                                String onlyFileName = tmpFile.getName();
 
-                                // Starting from self
-                                nodeStub.sendMessage(searchData);
+                                RoutingData searchData = new RoutingData(x, y, nodeStub, "search");
+                                searchData.setFileName(onlyFileName);
+
+                                if (cmd.length == 4) {
+                                    int startPeerID;
+                                    try { startPeerID = Integer.parseInt(cmd[3]); }
+                                    catch (Exception e) {
+                                        System.out.println("Peer ID must be an integer");
+                                        break;
+                                    }
+
+                                    // Get remote stub for mentioned peer from DNS
+                                    NodeInterface startNodeStub =
+                                            dnsNodeStub.getNodeStub(startPeerID);
+
+                                    if (startNodeStub != null) {
+                                        // Starting search from mentioned peer id
+                                        startNodeStub.sendMessage(searchData);
+                                    }
+                                    else {
+                                        System.out.println("Peer " + cmd[3] + " does not exist");
+                                    }
+                                }
+                                else {
+                                    // Starting from self
+                                    nodeStub.sendMessage(searchData);
+                                }
                             }
                             else {
-                                System.out.println("Usage: search <keyword> <abs_filename>");
+                                System.out.println("Usage: search <keyword> <filename>\n" +
+                                                   "       search <keyword> <filename> <peer_id>");
                             }
+                        }
+                        else {
+                            System.out.println("Node is not part of the overlay network yet");
                         }
                         break;
 
